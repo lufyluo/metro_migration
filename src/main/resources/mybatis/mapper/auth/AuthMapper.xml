@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.metro.nccc.migration.dao.auth.AuthMapper">
+
+    <sql id="Base_Column_List">
+        id, name, parent_id as parentId,m_order as order,code,type,created_time as createdTime, updated_time as
+        updatedTime
+    </sql>
+
+    <!--<select id="getAll" resultType="com.metro.nccc.authority.model.po.RoleEntity" >-->
+    <!--SELECT-->
+    <!--<include refid="Base_Column_List" />-->
+    <!--FROM test_b-->
+    <!--</select>-->
+
+    <select id="query" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity"
+            resultType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM a_department_records
+        <if test="id!=null and id !=''">
+            WHERE id = #{id}
+        </if>
+        <if test="parentId!=null and parentId !=''">
+            WHERE parent_id = #{parentId}
+        </if>
+        <if test="type!=null">
+            WHERE type = #{type}
+        </if>
+    </select>
+
+
+    <update id="update" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        UPDATE
+        a_department_records
+        SET
+        <if test="name != null">name = #{name},</if>
+        <if test="parentId>0">parent_id = #{parentId},</if>
+        <if test="order != null">m_order = #{order},</if>
+        updated_time = now()
+        WHERE
+        id = #{id}
+    </update>
+
+    <insert id="batchInsertPosition" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        INSERT INTO
+        a_department_records
+        (name, parent_id,m_order,type)
+        VALUES
+        <foreach collection="list" item="emp" separator=",">
+            (#{emp.name},#{emp.parentId},0,3)
+        </foreach>
+    </insert>
+</mapper>

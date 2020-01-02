@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.metro.nccc.migration.dao.usercenter.UsercenterMapper">
+
+    <sql id="Base_Column_List">
+        id, name, employee_no as employeeNo,password,erp_wechatid as erpWechatId,id_no as
+        idNO,mobile,age,education,gender,organization,address,birthday,entryDate,employDate,interest,created_time as
+        createdTime, updated_time as updatedTime
+    </sql>
+    <sql id="Base_insert_Column_List">
+        name, employee_no ,password,erp_wechatid ,mobile,gender,address,headImg,email
+    </sql>
+
+    <!--<select id="getAll" resultType="com.metro.nccc.authority.model.po.RoleEntity" >-->
+    <!--SELECT-->
+    <!--<include refid="Base_Column_List" />-->
+    <!--FROM test_b-->
+    <!--</select>-->
+
+    <select id="queryByWechatIds" resultType="com.metro.nccc.migration.model.po.usercenter.UserEntity">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM u_user_records
+        <if test="id!=null and id !=''">
+            WHERE id = #{id}
+        </if>
+    </select>
+
+
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.metro.nccc.migration.model.vo.usercenter.WechatUserInfo">
+        INSERT INTO
+        u_user_records
+        (<include refid="Base_insert_Column_List"/>)
+        VALUES
+        <foreach collection="userInfos" item="emp" separator=",">
+            (#{emp.name},#{emp.userid},'e10adc3949ba59abbe56e057f20f883e',#{emp.userid},#{emp.mobile},#{emp.gender},#{emp.address},#{emp.avatar},#{emp.email})
+        </foreach>
+    </insert>
+
+</mapper>

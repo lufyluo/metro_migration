@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    usercenter:
+      url: ${pgsql_url:jdbc:postgresql://localhost:5432/auth}
+      username: ${pgsql_username:postgres}
+      password: ${pgsql_password:l87289610}
+      driver-class-name: org.postgresql.Driver
+    auth:
+      url: ${pgsql_url:jdbc:postgresql://localhost:5432/auth}
+      username: ${pgsql_username:postgres}
+      password: ${pgsql_password:l87289610}
+      driver-class-name: org.postgresql.Driver
+  redis:
+    database: 0
+    host: ${redis_host:10.253.100.12}
+    port: ${redis_port:30455}
+    # password: 123456
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+    timeout: 1200
+  cloud:
+    consul:
+      host: ${consul_host:127.0.0.1}
+      port: ${consul_port:8500}
+      enabled: true #是否启用consul
+      discovery:
+        enabled: true
+        instance-id: ${spring.application.name}:${server.port}
+        prefer-ip-address: true
+        health-check-interval: 10s
+        hostname: ${spring.application.name}
+        service-name: ${spring.application.name}
+
+migration:
+  accesstoken: B7b8h3K1Zupet6CxMRl2Eq25cWtJ_D_3vlSG-LnYkpMVH8qnQ2xbb5nJ5AlC07MeT2Z2clJG3o2-wNAycV2UPgJOb9kth4wsKcj1c7qMhXb1V7qeqEg8_GGpQ7eL9Mvq0yiagMKHVJIkuL4FKgtSrzuC2cmpihEvVxsFvlxcqjDih_0X0wFzRJBrT0U-uwgz4gyv1DKIdTZs0Vm7o-aNhA
