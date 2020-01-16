@@ -13,6 +13,16 @@
     <!--FROM test_b-->
     <!--</select>-->
 
+    <select id="queryUpper" resultType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        with RECURSIVE cte as
+            (
+            select a.id, a.name, a.parent_id as parentId,a.type from a_department_records a where id=#{parentId}
+            union all
+            select k.id, k.name, k.parent_id as parentId,k.type from a_department_records k inner join cte c on c.parentId = k.id
+            )
+        select distinct * from cte;
+    </select>
+
     <select id="query" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity"
             resultType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
         SELECT
@@ -27,6 +37,18 @@
         <if test="type!=null">
             WHERE type = #{type}
         </if>
+    </select>
+    <select id="pageQuery" resultType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM a_department_records
+        where type !=3
+        order by id
+        LIMIT #{pageSize} OFFSET #{pageIndex}
+    </select>
+    <select id="countDeaprt" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM a_department_records
+        where type !=3
     </select>
 
 
@@ -50,6 +72,19 @@
         VALUES
         <foreach collection="list" item="emp" separator=",">
             (#{emp.name},#{emp.parentId},0,3)
+        </foreach>
+    </insert>
+    <insert id="batchInsertDepartUser"  parameterType="com.metro.nccc.migration.model.po.auth.DepartmentUserEntity">
+        INSERT INTO
+        a_department_user_records
+        (department_id, user_id,departmentpath)
+        VALUES
+        <foreach collection="list" item="emp" separator=",">
+            (#{emp.departmentId},#{emp.userId},
+            <foreach collection="emp.departmentPath" open="array[" close="]" item="departId" separator=",">
+                #{departId}
+            </foreach>
+            )
         </foreach>
     </insert>
 </mapper>

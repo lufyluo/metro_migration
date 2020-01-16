@@ -8,7 +8,7 @@
         createdTime, updated_time as updatedTime
     </sql>
     <sql id="Base_insert_Column_List">
-        name, employee_no ,password,erp_wechatid ,mobile,gender,address,headImg,email
+        name, employee_no ,password,erp_wechatid ,mobile,gender,address,avatar,email
     </sql>
 
     <!--<select id="getAll" resultType="com.metro.nccc.authority.model.po.RoleEntity" >-->
@@ -19,10 +19,14 @@
 
     <select id="queryByWechatIds" resultType="com.metro.nccc.migration.model.po.usercenter.UserEntity">
         SELECT
-        <include refid="Base_Column_List"/>
+        id,employee_no as employeeNo,erp_wechatid as erpWechatId
         FROM u_user_records
-        <if test="id!=null and id !=''">
-            WHERE id = #{id}
+        <if test="wechatIds!=null">
+            WHERE
+            <foreach collection="wechatIds" item="temp" open="array[" close="]" separator=",">
+                #{temp}
+            </foreach>
+            @>array[erp_wechatid]
         </if>
     </select>
 
@@ -34,7 +38,7 @@
         (<include refid="Base_insert_Column_List"/>)
         VALUES
         <foreach collection="userInfos" item="emp" separator=",">
-            (#{emp.name},#{emp.userid},'e10adc3949ba59abbe56e057f20f883e',#{emp.userid},#{emp.mobile},#{emp.gender},#{emp.address},#{emp.avatar},#{emp.email})
+            (#{emp.name},#{emp.userid},'e10adc3949ba59abbe56e057f20f883e',#{emp.userid},#{emp.mobile},#{emp.gender} -1,#{emp.address},#{emp.avatar},#{emp.email})
         </foreach>
     </insert>
 

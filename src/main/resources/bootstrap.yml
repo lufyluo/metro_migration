@@ -1,15 +1,18 @@
+server:
+  port: 6066
 spring:
+  application:
+    name: nccc-migration
   datasource:
+    driver-class-name: org.postgresql.Driver
     usercenter:
-      url: ${pgsql_url:jdbc:postgresql://localhost:5432/auth}
+      jdbc-url: ${pgsql_url:jdbc:postgresql://localhost:5432/usercenter}
       username: ${pgsql_username:postgres}
       password: ${pgsql_password:l87289610}
-      driver-class-name: org.postgresql.Driver
     auth:
-      url: ${pgsql_url:jdbc:postgresql://localhost:5432/auth}
+      jdbc-url: ${pgsql_url:jdbc:postgresql://localhost:5432/auth}
       username: ${pgsql_username:postgres}
       password: ${pgsql_password:l87289610}
-      driver-class-name: org.postgresql.Driver
   redis:
     database: 0
     host: ${redis_host:10.253.100.12}
@@ -22,17 +25,58 @@ spring:
         max-idle: 8
     timeout: 1200
   cloud:
-    consul:
-      host: ${consul_host:127.0.0.1}
-      port: ${consul_port:8500}
-      enabled: true #是否启用consul
-      discovery:
-        enabled: true
-        instance-id: ${spring.application.name}:${server.port}
-        prefer-ip-address: true
-        health-check-interval: 10s
-        hostname: ${spring.application.name}
-        service-name: ${spring.application.name}
-
+#    consul:
+#      host: ${consul_host:127.0.0.1}
+#      port: ${consul_port:8500}
+#      enabled: true #是否启用consul
+#      discovery:
+#        enabled: true
+#        instance-id: ${spring.application.name}:${server.port}
+#        prefer-ip-address: true
+#        health-check-interval: 10s
+#        hostname: ${spring.application.name}
+#        service-name: ${spring.application.name}
+### Ribbon 配置
+ribbon:
+  # 连接超时
+  ConnectTimeout: 2000
+  # 响应超时
+  ReadTimeout: 15000
+### Feign 配置
+feign:
+  # 开启断路器（熔断器）
+  hystrix:
+    enabled: false
+### Hystrix 配置
+hystrix:
+  # 这样将会自动配置一个 Hystrix 并发策略插件的 hook，这个 hook 会将 SecurityContext 从主线程传输到 Hystrix 的命令。
+  # 因为 Hystrix 不允许注册多个 Hystrix 策略，所以可以声明 HystrixConcurrencyStrategy
+  # 为一个 Spring bean 来实现扩展。Spring Cloud 会在 Spring 的上下文中查找你的实现，并将其包装在自己的插件中。
+  shareSecurityContext: true
+  command:
+    default:
+      circuitBreaker:
+        # 当在配置时间窗口内达到此数量的失败后，进行短路。默认20个
+        requestVolumeThreshold: 1
+        # 触发短路的时间值，当该值设为5000时，则当触发 circuit break 后的5000毫秒内都会拒绝request
+        # 也就是5000毫秒后才会关闭circuit。默认5000
+        sleepWindowInMilliseconds: 15000
+        # 强制打开熔断器，如果打开这个开关，那么拒绝所有request，默认false
+        forceOpen: false
+        # 强制关闭熔断器 如果这个开关打开，circuit将一直关闭且忽略，默认false
+        forceClosed: false
+      execution:
+        isolation:
+          thread:
+            # 熔断器超时时间，默认：1000/毫秒
+            timeoutInMilliseconds: 15000
+mybatis:
+  config-location: classpath:mybatis/config.xml
+  #  configuration:
+  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#  mapper-locations: classpath:mybatis/mapper/*.xml
 migration:
-  accesstoken: B7b8h3K1Zupet6CxMRl2Eq25cWtJ_D_3vlSG-LnYkpMVH8qnQ2xbb5nJ5AlC07MeT2Z2clJG3o2-wNAycV2UPgJOb9kth4wsKcj1c7qMhXb1V7qeqEg8_GGpQ7eL9Mvq0yiagMKHVJIkuL4FKgtSrzuC2cmpihEvVxsFvlxcqjDih_0X0wFzRJBrT0U-uwgz4gyv1DKIdTZs0Vm7o-aNhA
+  agentId: 1000337
+  appId: ww459483b92c637742  # m7zyRSo47oV8wqQzcrRJ-X9HpOiVo8aTmpnZJDSVpQg
+  accesstoken: OEFe0MPJkZZUnvpyH5sP1XMTLkCAURUQ9ZXsFWayIx6UwXWN67uXusRJLbbayPX4aBdxqD4ZnCQSxMWXY-kQE49m1yDyRnXW8T4xyYF0hnrpz52Ebtier8k-Nqu2hc9aA0dG2b_q-LDQe5GIXDvYGL5Pa89yoOSdnCZe_eVLBt7rkqFcw2HKGCOMY1_xqPy4UHpxa4RneStPctqnJJSKFw
+

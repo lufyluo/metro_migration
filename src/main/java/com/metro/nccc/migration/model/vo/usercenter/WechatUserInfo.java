@@ -41,7 +41,7 @@ public class WechatUserInfo {
 
     private String position;
     private String mobile;
-    private String gender;
+    private Integer gender;
     private String email;
     private String avatar;
     private String thumb_avatar;
@@ -52,8 +52,6 @@ public class WechatUserInfo {
     private String address;
     private int hide_mobile;
     private String english_name;
-    @SerializedName("department")
-    private List<Integer> departmentX;
     private List<Integer> order;
     private List<Integer> is_leader_in_dept;
 

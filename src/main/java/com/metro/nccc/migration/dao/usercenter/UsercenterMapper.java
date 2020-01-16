@@ -15,7 +15,7 @@ import java.util.List;
  */
 @Mapper
 public interface UsercenterMapper {
-    List<UserEntity> queryByWechatIds(@Param("wechatIds") ArrayObject wechatIds);
+    List<UserEntity> queryByWechatIds(@Param("wechatIds") List<String> wechatIds);
 
     Integer batchInsert(@Param("userInfos") List<WechatUserInfo> userInfos);
 }

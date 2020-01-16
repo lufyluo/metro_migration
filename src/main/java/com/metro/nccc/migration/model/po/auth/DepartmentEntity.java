@@ -1,6 +1,7 @@
 package com.metro.nccc.migration.model.po.auth;
 
 import com.metro.nccc.migration.model.enums.DepartmentCategory;
+import com.metro.nccc.migration.utils.maplain.Ancestors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,20 +16,18 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DepartmentEntity {
-    private Long id;
+public class DepartmentEntity extends Ancestors {
     private String name;
-    private Long parentId;
     private DepartmentCategory type;
     private Integer order;
     private String code;
     private Boolean leader;
-    private Integer[] departMentPath;
+    private Integer[] departmentPath;
     private Date createdTime;
     private Date updatedTime;
 
     public DepartmentEntity(String position, Long departmentId) {
         this.name = position;
-        this.parentId = getParentId();
+        this.parentId = departmentId;
     }
 }

@@ -1,8 +1,8 @@
 package com.metro.nccc.migration.utils.restclient;
 
-import com.metro.nccc.authority.infrastructure.interceptor.AuthException;
-import com.metro.nccc.authority.infrastructure.response.BaseResponse;
-import com.metro.nccc.authority.infrastructure.response.ResponseStatus;
+
+import com.metro.nccc.migration.utils.response.BaseResponse;
+import com.metro.nccc.migration.utils.response.ResponseStatus;
 
 /**
  * @Author lufy
@@ -15,7 +15,7 @@ public class RestClientHelper {
         if (response.getCode().equals(ResponseStatus.SUCCESS.getCode())) {
             return response.getData();
         } else {
-            throw new AuthException(ResponseStatus.valueOfCode(response.getCode()), "api调用发生错误： " + response.getMsg());
+            return null;
         }
     }
 

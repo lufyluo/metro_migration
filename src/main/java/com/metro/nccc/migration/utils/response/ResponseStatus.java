@@ -1,6 +1,7 @@
 package com.metro.nccc.migration.utils.response;
 
-import com.metro.nccc.authority.model.enums.BaseEnum;
+
+import com.metro.nccc.migration.model.enums.BaseEnum;
 
 import java.util.Objects;
 
@@ -16,7 +17,9 @@ public enum ResponseStatus implements BaseEnum {
     SUCCESS("00000000", "成功"),
     FAILURE("00000001", "发生异常"),
     UNAUTHORIZED("00000002", "鉴权失败"),
-    ARGUMENTNOTVALID("00000003", "参数异常");
+    ARGUMENTNOTVALID("00000003", "参数异常"),
+    WECHATSUCCESS("0","ok"),
+    WECHATCODEEXCEPTION("00000004", "获取企业微信code错误");
 
     private String code;
     private String desc;
