@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.metro.nccc.migration.dao.auth.AuthMapper">
-
+    <resultMap id="DepartmentUserEntityMap" type="com.metro.nccc.migration.model.po.auth.DepartmentUserEntity">
+        <result property="departmentPath" column="departmentPath"
+                typeHandler="org.apache.ibatis.type.ArrayTypeHandler"/>
+    </resultMap>
     <sql id="Base_Column_List">
         id, name, parent_id as parentId,m_order as order,code,type,created_time as createdTime, updated_time as
         updatedTime
     </sql>
+    <delete id="delete">
+        with RECURSIVE departs as
+        (
+        select a.id, a.name, a.parent_id,a.type from a_department_records a where id=#{departmentId}
+        union all
+        select k.id, k.name, k.parent_id,k.type from a_department_records k inner join departs c on c.id = k.parent_id
+        )
+
+        delete from a_department_records where id in (select distinct id from departs)
+    </delete>
 
     <!--<select id="getAll" resultType="com.metro.nccc.authority.model.po.RoleEntity" >-->
     <!--SELECT-->
@@ -38,6 +51,7 @@
             WHERE type = #{type}
         </if>
     </select>
+
     <select id="pageQuery" resultType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
         SELECT
         <include refid="Base_Column_List"/>
@@ -46,11 +60,18 @@
         order by id
         LIMIT #{pageSize} OFFSET #{pageIndex}
     </select>
+
     <select id="countDeaprt" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM a_department_records
         where type !=3
     </select>
 
+    <select id="queryUserDeparts" resultMap="DepartmentUserEntityMap">
+        SELECT
+        user_id as userId,departmentPath
+        FROM a_department_user_records
+        where ${userIds}@>array[user_id]
+    </select>
 
     <update id="update" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
         UPDATE
@@ -62,6 +83,21 @@
         updated_time = now()
         WHERE
         id = #{id}
+    </update>
+    <update id="updatePath" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentUserEntity">
+        <foreach collection="needUpdateData" separator=";" item="item">
+            UPDATE
+            a_department_user_records
+            SET
+            departmentpath =
+            <foreach collection="item.departmentPath" separator="," item="departmentId" open="array[" close="],">
+            #{departmentId}
+            </foreach>
+            updated_time = now()
+            WHERE
+            user_id = #{item.userId}
+        </foreach>
+
     </update>
 
     <insert id="batchInsertPosition" useGeneratedKeys="true" keyProperty="id"

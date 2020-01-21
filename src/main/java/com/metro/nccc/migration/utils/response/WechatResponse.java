@@ -29,4 +29,8 @@ public class WechatResponse implements Serializable {
     public Boolean notAuthed(){
         return errcode==60011;
     }
+
+    public Boolean departmentRemoved(){
+        return errcode==60003;
+    }
 }

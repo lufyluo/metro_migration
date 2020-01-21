@@ -21,10 +21,6 @@ public class SyncUserServiceTest {
 
     @Test
     public void sync() {
-        try {
-            syncUserService.sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        syncUserService.sync();
     }
 }

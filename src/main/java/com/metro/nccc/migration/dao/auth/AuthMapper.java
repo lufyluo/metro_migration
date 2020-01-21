@@ -2,6 +2,7 @@ package com.metro.nccc.migration.dao.auth;
 
 import com.metro.nccc.migration.model.po.auth.DepartmentEntity;
 import com.metro.nccc.migration.model.po.auth.DepartmentUserEntity;
+import com.metro.nccc.migration.utils.ibatis.ArrayObject;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,4 +30,9 @@ public interface AuthMapper {
 
     Integer countDeaprt();
 
+    Integer delete(Long departmentId);
+
+    List<DepartmentUserEntity> queryUserDeparts(@Param("userIds") ArrayObject userIds);
+
+    Integer updatePath(@Param("needUpdateData") List<DepartmentUserEntity> needUpdateData);
 }

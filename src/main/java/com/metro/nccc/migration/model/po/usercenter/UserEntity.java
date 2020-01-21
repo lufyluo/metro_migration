@@ -24,5 +24,5 @@ public class UserEntity{
     private Date entryDate;
     private Date employDate;
     private Date birthday;
-    private String headImg;
+    private String avatar;
 }

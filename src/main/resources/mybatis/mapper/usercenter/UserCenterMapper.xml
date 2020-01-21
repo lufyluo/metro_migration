@@ -10,6 +10,11 @@
     <sql id="Base_insert_Column_List">
         name, employee_no ,password,erp_wechatid ,mobile,gender,address,avatar,email
     </sql>
+    <update id="updateAvatar" parameterType="com.metro.nccc.migration.model.po.usercenter.UserEntity">
+        <foreach collection="userEntities" separator=";" item="item">
+            update u_user_records set avatar = #{item.avatar},updated_time = now() where erp_wechatid = #{item.erpWechatId}
+        </foreach>
+    </update>
 
     <!--<select id="getAll" resultType="com.metro.nccc.authority.model.po.RoleEntity" >-->
     <!--SELECT-->

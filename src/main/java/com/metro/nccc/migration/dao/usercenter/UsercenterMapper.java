@@ -18,4 +18,6 @@ public interface UsercenterMapper {
     List<UserEntity> queryByWechatIds(@Param("wechatIds") List<String> wechatIds);
 
     Integer batchInsert(@Param("userInfos") List<WechatUserInfo> userInfos);
+
+    Integer updateAvatar(@Param("userEntities") List<UserEntity> userEntities);
 }

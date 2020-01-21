@@ -28,7 +28,10 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -61,11 +64,20 @@ public class SyncUserService {
     @Value("${migration.appId}")
     private String appId;
     @Value("${migration.accesstoken}")
-    private String accesstoken;
+    private String accessTokenDefault;
+    private volatile AtomicReference<String> accesstoken = new AtomicReference<>();
+    private volatile AtomicBoolean flag = new AtomicBoolean(true);
+    Lock lock = new ReentrantLock();
 
-    public Boolean sync() throws InterruptedException {
+    public Boolean sync(){
         int count = authMapper.countDeaprt();
+        System.out.println("部门总数： " + count);
         int index = 0;
+        flag.set(false);
+        String result = getWechatCode();
+        if(StringUtils.isEmpty(accesstoken.get())){
+            throw new MigrationException(result);
+        }
         while (index < count) {
             List<DepartmentEntity> departmentEntities = authMapper.pageQuery(index, 1);
             departmentEntities.forEach(n -> {
@@ -98,6 +110,29 @@ public class SyncUserService {
         return true;
 
     }
+    private String getWechatCode() {
+        if (!flag.get()) {
+            try {
+                lock.lock();
+                if(flag.get())
+                {
+                    return accesstoken.get();
+                }
+                BaseResponse<String> response = basicdataService.accessToken(agentId, appId, System.currentTimeMillis() + "");
+                if (ResponseStatus.SUCCESS.getCode().equals(response.getCode())) {
+                    System.out.println("获得accesstoken： " + response.getData());
+                    accesstoken.set(response.getData());
+                }
+            }catch (Exception ex){
+                return ex.getMessage();
+            }
+            finally {
+                flag.set(true);
+                lock.unlock();
+            }
+        }
+        return accesstoken.get();
+    }
 
     class syncUserTask implements Runnable {
         private Long departmentId;
@@ -111,7 +146,7 @@ public class SyncUserService {
         @Override
         @Transactional(rollbackFor = Exception.class)
         public void run() {
-            List<WechatUserInfo> userInfos = simplelist(accesstoken, departmentId, ferch_child);
+            List<WechatUserInfo> userInfos = simplelist(accesstoken.get(), departmentId, ferch_child);
             if (userInfos == null || userInfos.size() == 0) {
                 return;
             }
@@ -140,6 +175,16 @@ public class SyncUserService {
                     return userEntity;
                 }).collect(Collectors.toList());
                 userEntities.addAll(newEntities);
+            }else{
+                userEntities.forEach(user->{
+                    Optional<WechatUserInfo> optional = userInfos.stream().filter(n->n.getUserid().equals(user.getErpWechatId())).findFirst();
+                    if(optional.isPresent()){
+                        user.setAvatar(optional.get().getAvatar());
+                    }
+
+                });
+
+                usercenterMapper.updateAvatar(userEntities);
             }
             fillId(userInfos, userEntities);
         }
@@ -159,8 +204,38 @@ public class SyncUserService {
             List<Integer> paths = upSortDepartments.stream().map(value -> value.getId().intValue()).collect(Collectors.toList());
 
             List<DepartmentUserEntity> departmentUserEntities = buildDepartUserEntities(userInfos, departmentEntities, paths);
+            updateIfExist(departmentUserEntities);
+            if(departmentUserEntities == null || departmentUserEntities.size()==0){
+                return;
+            }
             authMapper.batchInsertDepartUser(departmentUserEntities);
 
+        }
+
+        private void updateIfExist(List<DepartmentUserEntity> departmentUserEntities) {
+            ArrayObject arrayObject = new ArrayObject(departmentUserEntities.stream().map(DepartmentUserEntity::getUserId).collect(Collectors.toList()));
+            List<DepartmentUserEntity> exist = authMapper.queryUserDeparts(arrayObject);
+            if (exist == null || exist.size() == 0) {
+                return;
+            }
+//            List<DepartmentUserEntity> needUpdateData = departmentUserEntities
+//                    .stream()
+//                    .filter(n -> exist.stream().anyMatch(existEntity -> existEntity.getUserId().equals(n.getUserId())))
+//                    .collect(Collectors.toList());
+            List<DepartmentUserEntity> needUpdateData = new ArrayList<>();
+            departmentUserEntities.forEach(item -> {
+                Optional<DepartmentUserEntity> optional = exist.stream().filter(n -> n.getUserId().equals(item.getUserId())).findFirst();
+                if (optional.isPresent()) {
+                    //Arrays.stream(item.getDepartmentPath()).collect(Collectors.toList()).addAll(optional.get().getDepartmentPath());
+                    Integer[] path = Arrays.stream(ArrayUtils.addAll(item.getDepartmentPath(), optional.get().getDepartmentPath())).distinct().toArray(Integer[]::new);
+                    item.setDepartmentPath(path);
+                    needUpdateData.add(item);
+                }
+            });
+            if (needUpdateData.size() > 0) {
+                authMapper.updatePath(needUpdateData);
+                departmentUserEntities.removeAll(needUpdateData);
+            }
         }
 
         private List<DepartmentUserEntity> buildDepartUserEntities(List<WechatUserInfo> userInfos, List<DepartmentEntity> departmentEntities, List<Integer> paths) {
@@ -209,20 +284,17 @@ public class SyncUserService {
                 return response.getUserlist();
             } else if (response.notAuthed()) {
                 return new ArrayList<>();
+            } else if (response.departmentRemoved()) {
+                authMapper.delete(department_id);
             } else {
-                accesstoken = getWechatCode();
+                flag.set(false);
+                accesstoken.set(getWechatCode());
             }
             return new ArrayList<>();
 
         }
 
-        private String getWechatCode() {
-            BaseResponse<String> response = basicdataService.accessToken(agentId, appId, System.currentTimeMillis() + "");
-            if (ResponseStatus.SUCCESS.getCode().equals(response.getCode())) {
-                return response.getData();
-            }
-            throw new MigrationException(ResponseStatus.WECHATCODEEXCEPTION);
-        }
+
 
         public Long getDepartmentId() {
             return departmentId;
