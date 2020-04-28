@@ -1,6 +1,5 @@
 package com.metro.nccc.migration.model.vo.usercenter;
 
-import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 import java.util.List;

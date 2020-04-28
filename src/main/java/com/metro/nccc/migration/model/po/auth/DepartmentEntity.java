@@ -25,6 +25,7 @@ public class DepartmentEntity extends Ancestors {
     private Integer[] departmentPath;
     private Date createdTime;
     private Date updatedTime;
+    private String path;
 
     public DepartmentEntity(String position, Long departmentId) {
         this.name = position;

@@ -18,7 +18,9 @@ public class UserEntity{
     private String erpWechatId;
     private String idNo;
     private String mobile;
+    private String email;
     private int age;
+    private int gender;
     private String organization;
     private String address;
     private Date entryDate;

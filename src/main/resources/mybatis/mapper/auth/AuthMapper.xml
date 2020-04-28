@@ -6,7 +6,7 @@
                 typeHandler="org.apache.ibatis.type.ArrayTypeHandler"/>
     </resultMap>
     <sql id="Base_Column_List">
-        id, name, parent_id as parentId,m_order as order,code,type,created_time as createdTime, updated_time as
+        id, name, parent_id as parentId,m_order as order,code,type,path,created_time as createdTime, updated_time as
         updatedTime
     </sql>
     <delete id="delete">
@@ -41,14 +41,21 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM a_department_records
+        where 1=1
         <if test="id!=null and id !=''">
-            WHERE id = #{id}
+            and id = #{id}
         </if>
         <if test="parentId!=null and parentId !=''">
-            WHERE parent_id = #{parentId}
+            and parent_id = #{parentId}
         </if>
         <if test="type!=null">
-            WHERE type = #{type}
+            and type = #{type}
+        </if>
+        <if test="name!=null">
+            and name = #{name}
+        </if>
+        <if test="path!=null">
+            and path = #{path}
         </if>
     </select>
 
@@ -71,6 +78,10 @@
         user_id as userId,departmentPath
         FROM a_department_user_records
         where ${userIds}@>array[user_id]
+    </select>
+    <select id="queryUserRole" resultType="com.metro.nccc.migration.model.po.auth.UserRoleEntity">
+        select id, user_id as userId,employee_no as employeeNo from a_user_role_records
+        where user_id = #{userId} limit 1
     </select>
 
     <update id="update" parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
@@ -99,6 +110,19 @@
         </foreach>
 
     </update>
+    <update id="updateUserRole">
+        update a_user_role_records set employee_no=#{employeeNo} where id = #{id}
+    </update>
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
+        INSERT INTO
+        a_department_records
+        (name, parent_id,m_order,type,path)
+        VALUES
+         (#{name},#{parentId},0,#{type},#{path})
+    </insert>
 
     <insert id="batchInsertPosition" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.metro.nccc.migration.model.po.auth.DepartmentEntity">
@@ -110,6 +134,7 @@
             (#{emp.name},#{emp.parentId},0,3)
         </foreach>
     </insert>
+
     <insert id="batchInsertDepartUser"  parameterType="com.metro.nccc.migration.model.po.auth.DepartmentUserEntity">
         INSERT INTO
         a_department_user_records
@@ -122,5 +147,8 @@
             </foreach>
             )
         </foreach>
+    </insert>
+    <insert id="insertUserRole">
+        insert into a_user_role_records(user_id,employee_no)values (#{userId},#{employeeNo})
     </insert>
 </mapper>

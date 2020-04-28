@@ -6,6 +6,7 @@ import com.metro.nccc.migration.utils.ibatis.ArrayObject;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,7 +18,17 @@ import java.util.List;
 public interface UsercenterMapper {
     List<UserEntity> queryByWechatIds(@Param("wechatIds") List<String> wechatIds);
 
+    UserEntity queryByEmployeeNo(@Param("employeeNo") String employeeNo);
+
     Integer batchInsert(@Param("userInfos") List<WechatUserInfo> userInfos);
 
+    Integer insert(UserEntity userEntities);
+
     Integer updateAvatar(@Param("userEntities") List<UserEntity> userEntities);
+
+    int max();
+
+    UserEntity queryById(int id);
+
+    int count(int id);
 }
